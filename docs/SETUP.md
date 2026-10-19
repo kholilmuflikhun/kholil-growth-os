@@ -36,6 +36,14 @@ Deploy `apps/web` and `apps/gos` as separate Vercel projects if desired. Set onl
 
 Apply reviewed migrations with `pnpm db:deploy` from the configured deployment environment. Never run destructive database reset commands against production. Test backup restoration and the public lead-to-CRM flow before opening the site to visitors.
 
-## Current verification caveat
+## Verification status
 
-The current source editing environment could not access the npm registry and could not run pnpm. Therefore the lockfile has not been generated and dependency installation, Prisma client generation, build, lint, semantic typecheck, unit/e2e tests, database migrations, and deployment remain unverified until run in a network-enabled development or CI environment.
+Local verification on 19 October 2026:
+
+- `pnpm db:generate`, `pnpm build`, `pnpm typecheck`, and `pnpm test` passed.
+- `pnpm lint` passed with 0 errors and 16 existing warnings.
+- `pnpm qa:static` passed; 152 TS/TSX files were scanned with 0 syntax errors.
+- `pnpm production:check` passed with the root `.env` loaded automatically. Email and WhatsApp providers are still optional and unconfigured.
+- `pnpm test:e2e` passed 7 tests, skipped 1, and failed 2 anonymous CRM API checks because Playwright reused the already-running GOS server, whose log reports that `DATABASE_URL` is missing. Restart that local server with the root environment loaded, then rerun the browser suite.
+
+Database migrations, production credentials, provider delivery, and deployment have not been verified. Passing local checks is not production certification; complete the deployment checklist before launch.
