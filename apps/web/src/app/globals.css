@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "../../../../packages/ui/src/theme.css";
+@custom-variant dark (&:where(.dark, .dark *));
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+
+
+/* Shared mobile usability rules: safe focus states, readable anchors and reduced motion. */
+:where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
+section[id] { scroll-margin-top: 6rem; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

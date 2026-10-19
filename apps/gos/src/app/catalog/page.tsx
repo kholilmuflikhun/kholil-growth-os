@@ -1,0 +1,4 @@
+import { requireSession } from "@/lib/auth";
+import CatalogManager from "./catalog-manager";
+import Link from "next/link";
+export default async function CatalogPage(){await requireSession();return <main className="min-h-screen p-5 sm:p-8"><div className="mx-auto max-w-6xl"><p className="text-sm font-bold text-blue-600">PRODUK & LAYANAN</p><h1 className="mt-2 text-3xl font-extrabold">Katalog layanan</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">Kelola deskripsi, kategori, harga indikatif, dan status publikasi. Layanan berstatus Aktif dapat ditampilkan di website publik setelah katalog database mulai dikonfigurasi.</p><div className="mt-5"><Link href="/products" className="inline-flex rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-bold dark:border-zinc-700">Kelola produk & resource digital →</Link></div><div className="mt-8"><CatalogManager/></div></div></main>;}

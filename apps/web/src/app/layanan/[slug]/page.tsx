@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, MessageCircle } from "lucide-react";
+import { formatPrice, getCategory, services } from "@/lib/catalog";
+import { resolvePublicService } from "@/lib/public-service";
+
+export function generateStaticParams() { return services.map((service) => ({ slug: service.slug })); }
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params; const service = await resolvePublicService(slug);
+  if (!service) return { title: "Layanan tidak ditemukan" };
+  return { title: `${service.name} — Kholil Muflikhun`, description: service.summary };
+}
+export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; const service = await resolvePublicService(slug); if (!service) notFound();
+  const category = getCategory(service.categoryId)!;
+  const price = service.priceFrom !== undefined && service.priceFrom !== null ? `Mulai ${formatPrice(service.priceFrom)}` : service.priceLabel ?? "Penawaran khusus";
+  const message = encodeURIComponent(`Halo Kholil, saya ingin konsultasi layanan ${service.name}. Mohon informasi mengenai scope, harga, dan estimasi pengerjaan.`);
+  return <main className="min-h-screen bg-white dark:bg-zinc-950"><header className="border-b border-zinc-200 dark:border-zinc-800"><div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4"><Link href="/" className="font-extrabold">Kholil Muflikhun<span className="text-blue-500">.</span></Link><Link href="/#layanan" className="inline-flex items-center gap-2 text-sm font-bold text-zinc-600 hover:text-blue-600 dark:text-zinc-300"><ArrowLeft size={16}/> Semua layanan</Link></div></header>
+    <div className="mx-auto max-w-5xl px-5 py-14 sm:py-20"><p className="text-sm font-extrabold uppercase tracking-[.18em] text-blue-600">{category.name}</p><h1 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-tight sm:text-5xl">{service.name}</h1><p className="mt-5 max-w-3xl text-lg leading-8 text-zinc-600 dark:text-zinc-300">{service.summary} {service.description}</p>
+      <div className="mt-8 flex flex-wrap items-center gap-4"><div className="rounded-2xl bg-blue-50 px-5 py-4 dark:bg-blue-950/30"><p className="text-xs text-zinc-500">Harga indikatif</p><p className="mt-1 text-2xl font-extrabold text-blue-600">{price}</p></div><div className="flex items-center gap-2 rounded-2xl border border-zinc-200 px-4 py-4 text-sm dark:border-zinc-800"><Clock3 size={18} className="text-blue-500"/><span>{service.timeline}</span></div></div>
+      <div className="mt-10 grid gap-8 md:grid-cols-[1fr_320px]"><section className="space-y-8"><div><h2 className="text-xl font-extrabold">Apa yang termasuk?</h2><ul className="mt-4 space-y-3">{service.deliverables.map((item) => <li key={item} className="flex gap-3 text-sm leading-6 text-zinc-700 dark:text-zinc-300"><CheckCircle2 size={18} className="mt-0.5 shrink-0 text-blue-500"/>{item}</li>)}</ul></div><div><h2 className="text-xl font-extrabold">Cocok untuk</h2><ul className="mt-4 list-inside list-disc space-y-2 text-sm leading-6 text-zinc-700 marker:text-blue-500 dark:text-zinc-300">{service.idealFor.map((item) => <li key={item}>{item}</li>)}</ul></div><div className="rounded-2xl border border-zinc-200 p-5 dark:border-zinc-800"><h2 className="font-extrabold">Bagaimana harga final ditentukan?</h2><p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">Harga akhir ditetapkan setelah brief, jumlah deliverable, tingkat kompleksitas, kebutuhan aset/lisensi, timeline, dan batas revisi disepakati secara tertulis. Untuk layanan berbasis jumlah, produksi, atau proyek khusus, penawaran diberikan setelah spesifikasi jelas.</p></div></section>
+      <aside className="h-fit rounded-3xl border border-zinc-200 p-6 dark:border-zinc-800"><h2 className="text-lg font-extrabold">Diskusikan kebutuhan Anda</h2><p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">Ceritakan tujuan, deadline, dan hasil yang Anda butuhkan untuk memperoleh penawaran yang sesuai.</p><a href={`https://wa.me/6285819950006?text=${message}`} target="_blank" rel="noreferrer" className="mt-5 flex items-center justify-center gap-2 rounded-xl bg-blue-500 px-4 py-3 font-bold text-white hover:bg-blue-600"><MessageCircle size={17}/> Konsultasi WhatsApp</a><a href={`/?layanan=${service.slug}#kontak`} className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-zinc-200 px-4 py-3 text-sm font-bold hover:border-blue-300 dark:border-zinc-800">Isi formulir penawaran <ArrowRight size={15}/></a><p className="mt-4 text-xs leading-5 text-zinc-500">Estimasi pengerjaan dihitung setelah brief dan materi lengkap diterima.</p></aside></div>
+    </div><footer className="border-t border-zinc-200 py-6 text-center text-xs text-zinc-500 dark:border-zinc-800">© {new Date().getFullYear()} Kholil Muflikhun</footer></main>;
+}

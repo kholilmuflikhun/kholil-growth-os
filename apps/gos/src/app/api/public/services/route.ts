@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+export const dynamic="force-dynamic";
+export async function GET(request:Request){try{const slug=new URL(request.url).searchParams.get("slug");const total=await prisma.service.count();const data=await prisma.service.findMany({where:{status:"ACTIVE",...(slug?{slug}:{})},select:{id:true,name:true,slug:true,description:true,category:true,priceFrom:true,currency:true},orderBy:[{sortOrder:"asc"},{name:"asc"}],take:200});return NextResponse.json({data:data.map(item=>({...item,priceFrom:item.priceFrom===null?null:Number(item.priceFrom)})),hasConfiguredCatalog:total>0},{headers:{"Cache-Control":"public, max-age=60, stale-while-revalidate=300"}});}catch{return NextResponse.json({error:"Katalog belum tersedia."},{status:503,headers:{"Cache-Control":"no-store"}});}}

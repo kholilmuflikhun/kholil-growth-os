@@ -1,0 +1,4 @@
+import { requireSession } from "@/lib/auth";
+import ProductsManager from "./products-manager";
+import Link from "next/link";
+export default async function ProductsPage(){await requireSession();return <main className="min-h-screen p-5 sm:p-8"><div className="mx-auto max-w-6xl"><p className="text-sm font-bold text-blue-600">KATALOG DIGITAL</p><h1 className="mt-2 text-3xl font-extrabold">Produk & resource</h1><p className="mt-2 text-sm text-zinc-500">Kelola produk yang dipublikasikan di website. Pembayaran, lisensi otomatis, dan secure download belum diaktifkan; CTA publik mengarahkan calon pembeli untuk mengajukan permintaan.</p><div className="mt-5"><Link href="/catalog" className="inline-flex rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-bold dark:border-zinc-700">← Kelola layanan</Link></div><div className="mt-8"><ProductsManager/></div></div></main>;}

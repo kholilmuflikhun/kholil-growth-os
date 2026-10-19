@@ -1,0 +1,4 @@
+import Link from "next/link";
+import { requireSession } from "@/lib/auth";
+import CampaignManager from "./campaign-manager";
+export default async function CampaignsPage(){await requireSession();return <main className="min-h-screen p-5 sm:p-8"><div className="mx-auto max-w-6xl"><Link href="/content" className="text-sm font-bold text-blue-600">← Content Planner</Link><p className="mt-8 text-sm font-bold text-blue-600">MARKETING & ATTRIBUTION</p><h1 className="mt-2 text-3xl font-extrabold">Kampanye</h1><p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-500">Gunakan slug kampanye sebagai nilai `utm_campaign` pada tautan promosi. Lead yang cocok akan ditautkan ke kampanye; atribusi berbasis UTM dicatat sebagai sumber, bukan bukti kausalitas.</p><div className="mt-8"><CampaignManager/></div></div></main>;}

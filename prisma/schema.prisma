@@ -1,0 +1,483 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../packages/database/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  DISCOVERY
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+enum RecordStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         String   @default("OWNER")
+  mustChangePassword Boolean @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  notifications Notification[]
+  authSessions AuthSession[]
+}
+
+model Lead {
+  id             String        @id @default(cuid())
+  name           String
+  contact        String
+  businessName   String?
+  service        String
+  message        String
+  source         String        @default("website")
+  consentedAt    DateTime?
+  consentVersion String?
+  sourceUrl      String?
+  utmSource      String?
+  utmMedium      String?
+  utmCampaign    String?
+  campaignId     String?
+  campaign       Campaign?     @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  status         LeadStatus    @default(NEW)
+  estimatedValue Decimal?      @db.Decimal(14, 2)
+  probability    Int           @default(10)
+  owner          String?
+  lostReason     String?
+  nextFollowUp   DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  proposals      Proposal[]
+  activities     LeadActivity[]
+  @@index([status, createdAt])
+  @@index([contact])
+  @@index([nextFollowUp])
+  @@index([campaignId, createdAt])
+  @@index([utmCampaign, createdAt])
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type      String
+  note      String
+  dueAt     DateTime?
+  createdBy String?
+  createdAt DateTime @default(now())
+  @@index([leadId, createdAt])
+  @@index([dueAt])
+}
+
+model Customer {
+  id           String   @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  businessName String?
+  orders       Order[]
+  payments     Payment[]
+  carePlans    CustomerCarePlan[]
+  opportunities ClientOpportunity[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([name])
+  @@index([phone])
+  @@index([email])
+}
+
+model Service {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String
+  category    String
+  priceFrom   Decimal?     @db.Decimal(14, 2)
+  currency    String       @default("IDR")
+  status      RecordStatus @default(DRAFT)
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([status, sortOrder])
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  name        String
+  metric      String
+  targetValue Decimal  @db.Decimal(14, 2)
+  currency    String   @default("IDR")
+  startDate   DateTime
+  endDate     DateTime
+  activeDays  Int      @default(26)
+  status      String   @default("ACTIVE")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model FinancialTransaction {
+  id            String   @id @default(cuid())
+  type          String
+  category      String
+  classification String   @default("UNCLASSIFIED")
+  amount        Decimal  @db.Decimal(14, 2)
+  currency      String   @default("IDR")
+  occurredAt    DateTime
+  settlementAt  DateTime?
+  reference     String?
+  notes         String?
+  projectId     String?
+  project       Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  payment       Payment?
+  createdAt     DateTime @default(now())
+  @@index([type, occurredAt])
+  @@index([projectId, occurredAt])
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  customerId  String?
+  customerName String?
+  status      String   @default("PLANNING")
+  budget      Decimal? @db.Decimal(14, 2)
+  dueDate     DateTime?
+  transactions FinancialTransaction[]
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ContentItem {
+  id          String   @id @default(cuid())
+  title       String
+  channel     String
+  status      String   @default("IDEA")
+  plannedAt   DateTime?
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  campaignId       String?
+  campaign         Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  reach            Int       @default(0)
+  impressions      Int       @default(0)
+  engagement       Int       @default(0)
+  clicks           Int       @default(0)
+  attributedLeads  Int       @default(0)
+  attributedRevenue Decimal? @db.Decimal(14, 2)
+  updatedAt   DateTime @updatedAt
+
+  @@index([campaignId, plannedAt])
+}
+
+model KPIResult {
+  id          String   @id @default(cuid())
+  name        String
+  target      Decimal  @db.Decimal(14, 2)
+  actual      Decimal  @db.Decimal(14, 2)
+  weight      Decimal  @db.Decimal(7, 4)
+  periodStart DateTime
+  periodEnd   DateTime
+  createdAt   DateTime @default(now())
+}
+
+
+model Reminder {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  dueAt       DateTime
+  priority    String   @default("MEDIUM")
+  status      String   @default("OPEN")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  notifications Notification[]
+
+  @@index([status, dueAt])
+}
+
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminderId  String?
+  dedupeKey   String?  @unique
+  reminder    Reminder? @relation(fields: [reminderId], references: [id], onDelete: SetNull)
+  type        String   @default("REMINDER_DUE")
+  title       String
+  message     String
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, readAt, createdAt])
+}
+
+
+model Proposal {
+  id          String   @id @default(cuid())
+  leadId      String
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  title       String
+  amount      Decimal  @db.Decimal(14, 2)
+  status      String   @default("DRAFT")
+  sentAt      DateTime?
+  validUntil  DateTime?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Order?
+
+  @@index([status, createdAt])
+  @@index([leadId, createdAt])
+}
+
+
+model Order {
+  id           String   @id @default(cuid())
+  proposalId   String?  @unique
+  proposal     Proposal? @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+  customerId   String?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  customerName String
+  contact      String
+  title        String
+  amount       Decimal  @db.Decimal(14, 2)
+  status       String   @default("CONFIRMED")
+  startDate    DateTime?
+  dueDate      DateTime?
+  deliveredAt  DateTime?
+  notes        String?
+  payments     Payment[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status, dueDate])
+  @@index([deliveredAt])
+  @@index([customerName, createdAt])
+  @@index([customerId, createdAt])
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  transactionId String?  @unique
+  idempotencyKey String? @unique
+  transaction   FinancialTransaction? @relation(fields: [transactionId], references: [id], onDelete: SetNull)
+  amount        Decimal  @db.Decimal(14, 2)
+  paidAt        DateTime
+  method        String   @default("TRANSFER")
+  reference     String?
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([orderId, paidAt])
+  @@index([customerId, paidAt])
+}
+
+
+model ActionItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("GENERAL")
+  priority    String   @default("MEDIUM")
+  status      String   @default("OPEN")
+  dueAt       DateTime?
+  sourceKey   String?  @unique
+  sourceUrl   String?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  dailyExecutions DailyExecution[]
+
+  @@index([status, priority])
+  @@index([dueAt, status])
+  @@index([category, createdAt])
+}
+
+
+model DailyExecution {
+  id            String      @id @default(cuid())
+  activityDate  DateTime
+  activity      String
+  category      String      @default("SALES")
+  outcome       String?
+  revenueAmount Decimal     @default(0) @db.Decimal(14, 2)
+  expenseAmount Decimal     @default(0) @db.Decimal(14, 2)
+  minutesSpent  Int         @default(0)
+  actionId      String?
+  action        ActionItem? @relation(fields: [actionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([activityDate])
+  @@index([category, activityDate])
+  @@index([actionId])
+}
+
+
+model MonthlyPlan {
+  id             String   @id @default(cuid())
+  monthKey       String   @unique
+  monthStart     DateTime
+  summary        String?
+  wins           String?
+  challenges     String?
+  focusOne       String?
+  focusTwo       String?
+  focusThree     String?
+  revenueTarget  Decimal  @default(5200000) @db.Decimal(14, 2)
+  leadTarget     Int      @default(20)
+  contentTarget  Int      @default(12)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([monthStart])
+}
+
+
+model CustomerCarePlan {
+  id             String   @id @default(cuid())
+  customerId     String
+  customer       Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  serviceName    String
+  amount         Decimal  @db.Decimal(14, 2)
+  cadence        String   @default("MONTHLY")
+  status         String   @default("ACTIVE")
+  startAt        DateTime
+  nextRenewalAt  DateTime?
+  lastContactAt  DateTime?
+  nextContactAt  DateTime?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([customerId, status])
+  @@index([status, nextRenewalAt])
+  @@index([status, nextContactAt])
+}
+
+
+enum OpportunityStage {
+  IDEA
+  CONTACTED
+  PROPOSED
+  WON
+  LOST
+}
+
+enum OpportunityPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model ClientOpportunity {
+  id              String             @id @default(cuid())
+  customerId      String
+  customer        Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title           String
+  serviceSuggested String
+  estimatedValue  Decimal            @default(0) @db.Decimal(14, 2)
+  stage           OpportunityStage   @default(IDEA)
+  priority        OpportunityPriority @default(MEDIUM)
+  nextFollowUpAt  DateTime?
+  source          String             @default("MANUAL")
+  notes           String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([customerId, stage])
+  @@index([stage, nextFollowUpAt])
+  @@index([priority, createdAt])
+}
+
+
+model AuthSession {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt, revokedAt])
+}
+
+model RateLimitBucket {
+  id         String   @id @default(cuid())
+  keyHash    String
+  windowStart DateTime
+  count      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([keyHash, windowStart])
+  @@index([windowStart])
+}
+
+
+model Product {
+  id           String       @id @default(cuid())
+  name         String
+  slug         String       @unique
+  description  String
+  kind         String       @default("DIGITAL")
+  price        Decimal?     @db.Decimal(14, 2)
+  currency     String       @default("IDR")
+  licenseTerms String?
+  previewUrl   String?
+  status       RecordStatus @default(DRAFT)
+  sortOrder    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([status, updatedAt])
+  @@index([status, sortOrder])
+}
+
+
+model Campaign {
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  objective         String
+  channel           String
+  budget            Decimal? @db.Decimal(14, 2)
+  currency          String   @default("IDR")
+  startDate         DateTime?
+  endDate           DateTime?
+  targetLeads       Int?
+  targetConversions Int?
+  status            String   @default("DRAFT")
+  notes             String?
+  leads             Lead[]
+  contentItems      ContentItem[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status, startDate, endDate])
+}

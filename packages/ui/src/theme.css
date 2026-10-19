@@ -1,0 +1,49 @@
+/* Kholil Growth Design System — shared by apps/web and apps/gos */
+/* Override Tailwind's blue scale so every app uses the exact brand blue. */
+:root {
+  --color-blue-50: #EFF6FF;
+  --color-blue-100: #DBEAFE;
+  --color-blue-200: #BFDBFE;
+  --color-blue-300: #93C5FD;
+  --color-blue-400: #60A5FA;
+  --color-blue-500: #2563EB;
+  --color-blue-600: #1D4ED8;
+  --color-blue-700: #1E40AF;
+  --color-blue-800: #1E3A8A;
+  --color-blue-900: #1E3A8A;
+  --color-blue-950: #172554;
+}
+
+:root {
+  --kg-brand: #2563EB;
+  --kg-brand-hover: #1D4ED8;
+  --kg-ink: #111827;
+  --kg-muted: #6B7280;
+  --kg-canvas: #FFFFFF;
+  --kg-surface: #F3F4F6;
+  --kg-border: #D1D5DB;
+  --kg-radius-card: 1rem;
+  --kg-radius-control: .75rem;
+  --kg-focus-ring: 0 0 0 3px rgb(37 99 235 / 28%);
+}
+
+html.dark {
+  --kg-ink: #FAFAFA;
+  --kg-muted: #A3A3A3;
+  --kg-canvas: #0A0A0A;
+  --kg-surface: #171717;
+  --kg-border: #292929;
+}
+
+body {
+  color: var(--kg-ink);
+  background: var(--kg-canvas);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+:where(a, button, input, textarea, select, summary):focus-visible {
+  outline: none;
+  box-shadow: var(--kg-focus-ring);
+}
+
+::selection { background: #DBEAFE; color: #1E3A8A; }

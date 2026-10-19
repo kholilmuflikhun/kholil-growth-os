@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "../../../../packages/ui/src/theme.css";
+@custom-variant dark (&:where(.dark, .dark *));
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+
+
+/* Mobile-first navigation and comfortable touch targets shared across Growth OS screens. */
+@media (max-width: 1023px) {
+  body:has(.kg-mobile-nav) { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
+.kg-mobile-nav { padding-bottom: max(.5rem, env(safe-area-inset-bottom)); }
+:where(button, a, input, select, textarea) { -webkit-tap-highlight-color: transparent; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

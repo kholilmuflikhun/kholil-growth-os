@@ -1,0 +1,2 @@
+ALTER TABLE "Goal" ADD COLUMN IF NOT EXISTS "description" TEXT;
+ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "customerName" TEXT;
