@@ -29,15 +29,14 @@ export default function MonthlyReview(){
  const [error,setError]=useState("");
  const [notice,setNotice]=useState("");
  const load=useCallback(async()=>{
-  setLoading(true);setError("");
-  try{
-   const response=await fetch(`/api/monthly-review?month=${encodeURIComponent(month)}`,{cache:"no-store"});
+  try {
+   const response=await fetch(`/api/monthly-review?month=${encodeURIComponent(month)}`,{cache:"no-store"}); setLoading(true); setError(""); 
    const data=await response.json();if(!response.ok)throw new Error(data.error||"Gagal memuat review.");
    setReport(data);
    setForm({summary:data.plan?.summary||"",wins:data.plan?.wins||"",challenges:data.plan?.challenges||"",focusOne:data.plan?.focusOne||"",focusTwo:data.plan?.focusTwo||"",focusThree:data.plan?.focusThree||"",revenueTarget:String(data.plan?.revenueTarget??5200000),leadTarget:String(data.plan?.leadTarget??20),contentTarget:String(data.plan?.contentTarget??12)});
   }catch(e){setError(e instanceof Error?e.message:"Gagal memuat review.");}finally{setLoading(false);}
  },[month]);
- useEffect(()=>{void load();},[load]);
+ useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
  async function savePlan(event:FormEvent<HTMLFormElement>){
   event.preventDefault();setSaving(true);setError("");setNotice("");
   const response=await fetch("/api/monthly-review",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({monthKey:month,...form,revenueTarget:Number(form.revenueTarget),leadTarget:Number(form.leadTarget),contentTarget:Number(form.contentTarget)})});

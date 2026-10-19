@@ -15,9 +15,8 @@ export default function FinanceManager() {
   const [transactionType, setTransactionType] = useState("INCOME");
   const [classification, setClassification] = useState("OTHER_INCOME");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch("/api/finance", { cache: "no-store" }); const result = await response.json();
+      const response = await fetch("/api/finance", { cache: "no-store" }); setLoading(true); setError("");  const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Gagal memuat transaksi.");
       setRows(result.data);
       const projectResponse = await fetch("/api/projects", { cache: "no-store" });
@@ -26,7 +25,7 @@ export default function FinanceManager() {
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat transaksi."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
   const selected = rows.filter(r => r.occurredAt.slice(0, 7) === month);
   const income = selected.filter(r => r.type === "INCOME").reduce((s, r) => s + Number(r.amount), 0);
   const expense = selected.filter(r => r.type === "EXPENSE").reduce((s, r) => s + Number(r.amount), 0);

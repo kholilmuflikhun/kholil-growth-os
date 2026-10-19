@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@12.14.0",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "node --import dotenv/config node_modules/turbo/bin/turbo dev",
     "build": "pnpm db:generate && node --import dotenv/config node_modules/turbo/bin/turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",

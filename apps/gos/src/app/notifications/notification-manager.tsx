@@ -11,16 +11,15 @@ export default function NotificationManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch("/api/notifications", { cache: "no-store" });
+      const response = await fetch("/api/notifications", { cache: "no-store" }); setLoading(true); setError(""); 
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || "Gagal memuat notifikasi.");
       setItems(json.data); setUnread(json.unread);
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat notifikasi."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
 
   async function markRead(id: string) {
     const response = await fetch("/api/notifications", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });

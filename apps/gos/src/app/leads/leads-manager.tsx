@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { RefreshCw, Search, Trash2, Save, Plus, History, CalendarClock, UserRound, X, ExternalLink } from "lucide-react";
+import { useCurrentTime } from "@/lib/use-current-time";
 
 type Lead = {
   id: string; name: string; contact: string; businessName: string | null; service: string;
@@ -33,18 +34,18 @@ export default function LeadsManager() {
   const [probabilityDraft, setProbabilityDraft] = useState(10);
   const [lostReasonDraft, setLostReasonDraft] = useState("");
   const [messageDraft, setMessageDraft] = useState("");
+  const now = useCurrentTime();
 
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch("/api/leads", { cache: "no-store" });
+      const response = await fetch("/api/leads", { cache: "no-store" }); setLoading(true); setError(""); 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Gagal memuat prospek.");
       setLeads(result.data);
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat data."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
 
   async function update(id: string, patch: Record<string, unknown>) {
     setNotice(""); setError("");
@@ -81,7 +82,7 @@ export default function LeadsManager() {
   const active = leads.filter(l => !["WON", "LOST"].includes(l.status)).length;
   const pipelineValue = leads.filter(l => !["WON", "LOST"].includes(l.status)).reduce((sum, l) => sum + Number(l.estimatedValue || 0), 0);
   const weighted = leads.filter(l => !["WON", "LOST"].includes(l.status)).reduce((sum, l) => sum + Number(l.estimatedValue || 0) * (Number(l.probability ?? 10) / 100), 0);
-  const dueSoon = leads.filter(l => l.nextFollowUp && new Date(l.nextFollowUp).getTime() <= Date.now() + 3 * 86400000 && !["WON", "LOST"].includes(l.status)).length;
+  const dueSoon = now === null ? 0 : leads.filter(l => l.nextFollowUp && new Date(l.nextFollowUp).getTime() <= now + 3 * 86400000 && !["WON", "LOST"].includes(l.status)).length;
   async function addActivity(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedLead) return;

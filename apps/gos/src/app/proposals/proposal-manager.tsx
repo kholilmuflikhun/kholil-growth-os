@@ -16,9 +16,8 @@ export default function ProposalManager() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const [pRes, lRes] = await Promise.all([fetch("/api/proposals", { cache: "no-store" }), fetch("/api/leads", { cache: "no-store" })]);
+      const [pRes, lRes] = await Promise.all([fetch("/api/proposals", { cache: "no-store" }), fetch("/api/leads", { cache: "no-store" })]); setLoading(true); setError(""); 
       const pJson = await pRes.json(); const lJson = await lRes.json();
       if (!pRes.ok) throw new Error(pJson.error || "Gagal memuat penawaran.");
       if (!lRes.ok) throw new Error(lJson.error || "Gagal memuat prospek.");
@@ -26,7 +25,7 @@ export default function ProposalManager() {
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat data."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
 
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError(""); setNotice("");

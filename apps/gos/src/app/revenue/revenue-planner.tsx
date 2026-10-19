@@ -23,9 +23,8 @@ export default function RevenuePlanner() {
   const [averageOrder, setAverageOrder] = useState("500000");
   const [conversion, setConversion] = useState("25");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch("/api/revenue", { cache: "no-store" });
+      const response = await fetch("/api/revenue", { cache: "no-store" }); setLoading(true); setError(""); 
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || "Gagal memuat data revenue.");
       setSnapshot(json);
@@ -33,7 +32,7 @@ export default function RevenuePlanner() {
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat data revenue."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
 
   const calc = useMemo(() => {
     const daily = Math.max(0, Number(dailyTarget) || 0);

@@ -18,16 +18,15 @@ export default function ExecutionTracker() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch(`/api/execution?month=${encodeURIComponent(month)}`, { cache: "no-store" });
+      const response = await fetch(`/api/execution?month=${encodeURIComponent(month)}`, { cache: "no-store" }); setLoading(true); setError(""); 
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "Gagal memuat tracker.");
       setRows(result.data); setActions(result.actions); setSummary(result.summary);
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat tracker."); }
     finally { setLoading(false); }
   }, [month]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
   const totals = useMemo(() => ({ revenue: rows.reduce((s,r) => s + Number(r.revenueAmount),0), expenses: rows.reduce((s,r) => s + Number(r.expenseAmount),0), minutes: rows.reduce((s,r) => s + r.minutesSpent,0) }), [rows]);
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError(""); setNotice("");

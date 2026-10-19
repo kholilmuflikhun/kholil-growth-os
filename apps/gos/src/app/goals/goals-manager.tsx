@@ -6,8 +6,8 @@ type Goal = { id: string; name: string; metric: string; targetValue: string | nu
 const money = (n: number) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 export default function GoalsManager() {
   const [goals, setGoals] = useState<Goal[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [notice, setNotice] = useState("");
-  const load = useCallback(async () => { setLoading(true); setError(""); try { const r = await fetch("/api/goals", { cache: "no-store" }); const j = await r.json(); if (!r.ok) throw new Error(j.error || "Gagal memuat target."); setGoals(j.data); } catch(e) { setError(e instanceof Error ? e.message : "Gagal memuat target."); } finally { setLoading(false); } }, []);
-  useEffect(() => { void load(); }, [load]);
+  const load = useCallback(async () => { try { const r = await fetch("/api/goals", { cache: "no-store" }); setLoading(true); setError("");  const j = await r.json(); if (!r.ok) throw new Error(j.error || "Gagal memuat target."); setGoals(j.data); } catch(e) { setError(e instanceof Error ? e.message : "Gagal memuat target."); } finally { setLoading(false); } }, []);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
   async function create(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); setError(""); setNotice(""); const f = new FormData(e.currentTarget);
     const r = await fetch("/api/goals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: f.get("name"), metric: f.get("metric"), targetValue: f.get("targetValue"), startDate: f.get("startDate"), endDate: f.get("endDate"), activeDays: f.get("activeDays"), description: f.get("description") }) });

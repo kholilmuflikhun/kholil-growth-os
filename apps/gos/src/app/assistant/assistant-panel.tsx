@@ -15,16 +15,15 @@ export default function AssistantPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch("/api/assistant", { cache: "no-store" });
+      const response = await fetch("/api/assistant", { cache: "no-store" }); setLoading(true); setError(""); 
       const json = await response.json();
       if (!response.ok) throw new Error(json.error || "Gagal memuat rekomendasi.");
       setData(json);
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat rekomendasi."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
 
   return <div className="space-y-6">
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900"><div className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-xl bg-blue-100 text-blue-700"><Sparkles size={20}/></span><div><h2 className="font-extrabold">Briefing bisnis harian</h2><p className="mt-1 text-xs text-zinc-500">Berdasarkan transaksi, target, prospek, konten, dan pengingat di database.</p></div></div><button onClick={() => void load()} className="rounded-xl border border-zinc-200 px-3 py-2 text-sm font-semibold dark:border-zinc-700"><RefreshCw className="mr-1 inline" size={15}/>Perbarui analisis</button></div>

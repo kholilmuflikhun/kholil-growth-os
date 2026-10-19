@@ -19,9 +19,8 @@ export default function CustomersManager() {
   const [busy,setBusy] = useState(false);
   const [paymentIdempotencyKey,setPaymentIdempotencyKey] = useState(() => crypto.randomUUID());
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const [cRes,pRes] = await Promise.all([fetch("/api/customers",{cache:"no-store"}),fetch("/api/payments",{cache:"no-store"})]);
+      const [cRes,pRes] = await Promise.all([fetch("/api/customers",{cache:"no-store"}),fetch("/api/payments",{cache:"no-store"})]); setLoading(true); setError(""); 
       const [cJson,pJson] = await Promise.all([cRes.json(),pRes.json()]);
       if (!cRes.ok) throw new Error(cJson.error || "Gagal memuat pelanggan.");
       if (!pRes.ok) throw new Error(pJson.error || "Gagal memuat pembayaran.");
@@ -29,7 +28,7 @@ export default function CustomersManager() {
     } catch(e) { setError(e instanceof Error ? e.message : "Gagal memuat data."); }
     finally { setLoading(false); }
   },[]);
-  useEffect(()=>{void load();},[load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
   const orderRows = useMemo(()=>orders.map(o=>({...o,paid:o.payments.reduce((s,p)=>s+Number(p.amount),0),balance:Math.max(0,Number(o.amount)-o.payments.reduce((s,p)=>s+Number(p.amount),0))})),[orders]);
   const receivables = orderRows.filter(o=>o.status!=="CANCELLED").reduce((s,o)=>s+o.balance,0);
   const totalPayments = payments.reduce((s,p)=>s+Number(p.amount),0);

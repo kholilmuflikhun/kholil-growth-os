@@ -23,16 +23,15 @@ export default function WeeklyReview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const response = await fetch(`/api/weekly-review?week=${encodeURIComponent(week)}`, { cache: "no-store" });
+      const response = await fetch(`/api/weekly-review?week=${encodeURIComponent(week)}`, { cache: "no-store" }); setLoading(true); setError(""); 
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Gagal memuat review mingguan.");
       setReport(data);
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat review mingguan."); }
     finally { setLoading(false); }
   }, [week]);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
   const maxRevenue = useMemo(() => Math.max(1, ...(report?.daily.map(d => d.revenue) || [])), [report]);
   function moveWeek(delta: number) { const d = new Date(`${week}T12:00:00`); d.setDate(d.getDate()+delta*7); setWeek(weekStart(d)); }
   const statusLabel: Record<string,string> = { NEW:"Baru", CONTACTED:"Dihubungi", QUALIFIED:"Terkualifikasi", DISCOVERY:"Discovery", PROPOSAL:"Proposal", NEGOTIATION:"Negosiasi" };

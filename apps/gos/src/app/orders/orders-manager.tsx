@@ -24,9 +24,8 @@ export default function OrdersManager() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const load = useCallback(async () => {
-    setLoading(true); setError("");
     try {
-      const [oRes, pRes] = await Promise.all([fetch("/api/orders", { cache: "no-store" }), fetch("/api/projects", { cache: "no-store" })]);
+      const [oRes, pRes] = await Promise.all([fetch("/api/orders", { cache: "no-store" }), fetch("/api/projects", { cache: "no-store" })]); setLoading(true); setError(""); 
       const oJson = await oRes.json(); const pJson = await pRes.json();
       if (!oRes.ok) throw new Error(oJson.error || "Gagal memuat order.");
       if (!pRes.ok) throw new Error(pJson.error || "Gagal memuat proyek.");
@@ -34,7 +33,7 @@ export default function OrdersManager() {
     } catch (e) { setError(e instanceof Error ? e.message : "Gagal memuat data."); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { const timeout = window.setTimeout(() => { void load(); }, 0); return () => window.clearTimeout(timeout); }, [load]);
 
   async function convert(proposalId: string) {
     setBusy(proposalId); setError(""); setNotice("");

@@ -60,6 +60,80 @@ See [`docs/MASTER-PROMPT-AUDIT-AND-ROADMAP.md`](docs/MASTER-PROMPT-AUDIT-AND-ROA
 - `prisma`: initial relational data model
 - `docs`: setup, deployment, security notes
 
+## Struktur Akar Repository Saat Ini
+
+Berikut struktur utama repository sesuai file dan folder yang tersedia. File hasil build, cache, `node_modules`, dan file environment lokal sengaja tidak dicantumkan.
+
+```text
+kholil-growth-os/
+├── .github/
+│   └── workflows/
+│       └── quality-gates.yml
+├── .vscode/
+│   └── settings.json
+├── apps/
+│   ├── gos/                    # Dashboard Growth Operating System privat (port 3001)
+│   │   └── src/
+│   │       ├── app/            # Halaman dashboard dan API routes
+│   │       ├── components/
+│   │       └── lib/
+│   └── web/                    # Website personal brand publik (port 3000)
+│       └── src/
+│           ├── app/            # Halaman publik dan API routes
+│           ├── components/
+│           └── lib/
+├── deploy/
+│   ├── env.production.example  # Contoh variabel environment deployment
+│   └── env.production          # Konfigurasi deployment; jangan publikasikan secret
+├── docs/                       # Panduan setup, keamanan, deployment, fase, dan brand
+│   └── brand/
+├── packages/
+│   ├── business-core/          # Formula finance, KPI, dan attribution
+│   ├── config/                 # Konfigurasi ESLint dan TypeScript bersama
+│   ├── database/               # Prisma client dan akses database bersama
+│   ├── ui/                     # Komponen dan design tokens bersama
+│   └── validation/             # Skema validasi bersama
+├── prisma/
+│   ├── migrations/             # Riwayat migrasi database
+│   ├── bootstrap-admin.ts      # Membuat admin awal dari environment
+│   ├── schema.prisma
+│   └── seed.ts
+├── scripts/                    # Preflight produksi, smoke test, dan static checks
+├── tests/
+│   └── e2e/                    # Playwright end-to-end tests
+├── .env.example                # Template environment lokal
+├── package.json                # Perintah workspace dan versi runtime
+├── pnpm-lock.yaml              # Lockfile dependency workspace
+├── pnpm-workspace.yaml
+├── prisma7.config.ts
+├── playwright.config.ts
+└── turbo.json
+```
+
+### Klarifikasi Konfigurasi Repository
+
+- `pnpm-lock.yaml` dan `.env.example` tersedia di root repository saat ini. Gunakan lockfile yang ada untuk instalasi reproducible; jangan mengganti atau membagikan `.env` lokal.
+- Root `package.json` menetapkan Node.js `>=22.18.0` dan pnpm `>=12.7.0 <13`, dengan package manager yang dipatok ke pnpm `12.14.0`.
+- Perintah workspace utama mencakup `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm qa`, `pnpm test:e2e`, `pnpm smoke`, dan `pnpm production:check`.
+- Struktur di atas adalah ringkasan folder penting, bukan daftar setiap route atau file. Rincian modul dan prasyarat produksi ada di dokumentasi dalam `docs/`.
+
+## Phase 1 / Starter — Foundation & Monorepo Setup
+
+Dokumentasi fase: [`docs/PHASE-1.md`](docs/PHASE-1.md).
+
+Membangun fondasi awal Kholil Muflikhun Personal Brand + Growth Operating System sebagai monorepo dengan dua aplikasi terpisah:
+
+- `apps/web`: website publik personal brand, landing page, pengenalan layanan, CTA, serta dukungan tema light/dark.
+- `apps/gos`: dashboard privat Growth OS sebagai fondasi workspace manajemen bisnis.
+- `packages/ui`: komponen UI bersama agar tampilan kedua aplikasi konsisten.
+- `packages/config`: konfigurasi TypeScript bersama.
+- `packages/validation`: skema validasi awal berbasis Zod.
+- `prisma`: fondasi skema data PostgreSQL dan seed pengembangan.
+- pnpm workspaces + Turborepo untuk mengelola aplikasi dan paket bersama.
+- Fondasi desain responsif, Tailwind CSS, Next.js App Router, React, dan TypeScript.
+
+**Output Starter:** struktur repository, konfigurasi aplikasi, UI awal website publik dan dashboard, paket bersama, serta fondasi skema data. Starter adalah fondasi awal; autentikasi, modul operasional, dan fitur lanjutan ditambahkan pada fase berikutnya. Lihat juga [`docs/INTEGRATED-RELEASE.md`](docs/INTEGRATED-RELEASE.md) untuk urutan setup versi terintegrasi.
+
 ## Phase 2
 
 See `docs/PHASE-2.md` for the secure admin bootstrap and lead API. The first admin is not pre-created; create it using a strong password from uncommitted environment variables.
@@ -68,23 +142,65 @@ See `docs/PHASE-2.md` for the secure admin bootstrap and lead API. The first adm
 
 CRM, finance transaction entry, live dashboard aggregates, account settings and password change are documented in `docs/PHASE-3.md`.
 
-### Phase 8 — Reminders & Action Center
+## Phase 4 — Goals & Strategy, CSV Export
+
+Dokumentasi fase: [`docs/PHASE-4.md`](docs/PHASE-4.md).
+
+- Modul Goals & Strategy mendukung pembuatan goal berbasis database dan perubahan status melalui `/api/goals`.
+- Ekspor CRM melalui `/api/leads/export` dengan proteksi sesi.
+- Ekspor transaksi keuangan bulanan melalui `/api/finance/export?month=YYYY-MM` dengan proteksi sesi.
+- CSV meng-escape tanda kutip dan menetralkan nilai yang dapat memicu formula spreadsheet.
+
+## Phase 5 — Operational Modules: Projects, Content & KPI
+
+Dokumentasi fase: [`docs/PHASE-5.md`](docs/PHASE-5.md).
+
+- Projects & Orders mendukung pembuatan, daftar, perubahan status, penghapusan, anggaran proyek, dan tenggat.
+- Content Planner mendukung pembuatan konten, perubahan status, serta tanggal terjadwal dan publikasi.
+- KPI & Reports mendukung pencatatan hasil KPI dan ringkasan skor berbobot.
+- Migrasi `202610150001_phase5_operations` menambahkan `Goal.description` dan `Project.customerName` opsional.
+- Jalankan migrasi database sebelum menggunakan perubahan ini.
+
+## Phase 6 — Project-to-Finance Integration
+
+Dokumentasi fase: [`docs/PHASE-6.md`](docs/PHASE-6.md).
+
+- Transaksi keuangan dapat ditautkan secara opsional ke proyek melalui `projectId`.
+- Form Finance menyediakan pemilih proyek; riwayat transaksi menampilkan proyek terkait.
+- Daftar proyek merangkum pemasukan dan pengeluaran tercatat yang ditautkan ke proyek.
+- Ekspor CSV Finance menyertakan nama proyek.
+- Migrasi `202610150002_project_finance_link` menambahkan relasi opsional dan indeks.
+- Ringkasan realisasi per proyek hanya menghitung transaksi yang secara eksplisit ditautkan ke proyek.
+
+## Phase 7 — Business Intelligence & Forecasting
+
+Dokumentasi fase: [`docs/PHASE-7.md`](docs/PHASE-7.md).
+
+- Halaman terlindungi `/analytics` menampilkan tren pemasukan/pengeluaran tercatat selama enam bulan, arus kas bersih, estimasi pipeline CRM terbuka, aktivitas bulan berjalan, skor KPI, dan proyeksi pencapaian target.
+- Rekomendasi berbasis aturan transparan membantu menyoroti follow-up, pemeriksaan keuangan, dan pelaksanaan konten.
+- Proyeksi merupakan ekstrapolasi sederhana berdasarkan laju bulan berjalan; angka adalah estimasi, bukan jaminan hasil.
+- Dashboard tidak menggunakan target pendapatan bulanan hard-coded ketika tidak ada goal aktif. Buat goal pada `/goals` untuk mengaktifkan perhitungan progres target.
+- Analitik membaca data PostgreSQL yang tersedia dan tidak memerlukan migrasi skema tambahan khusus untuk fase ini.
+
+> Catatan: bagian Phase 1–7 merangkum riwayat fase pengembangan. Source code master merupakan baseline kumulatif; rincian perilaku dan batasan aktual tetap mengikuti implementasi, migrasi, serta hasil QA pada versi yang digunakan.
+
+## Phase 8 — Reminders & Action Center
 
 A protected `/reminders` page lets the owner create, prioritize, reschedule, complete, reopen, and delete reminders. Run `pnpm db:generate` and `pnpm db:migrate` after pulling this phase. In-app overdue indicators are included; external push/email/WhatsApp delivery is not configured in this phase.
 
-### Phase 9 — Integrations & Notification Automation
+## Phase 9 — Integrations & Notification Automation
 
 The Notification Center (`/notifications`) shows in-app alerts created by the secured `/api/automation/dispatch` endpoint. Set `CRON_SECRET` in the deployment environment. If deploying `apps/gos` as the Vercel project root, its `vercel.json` runs dispatch daily at 09:00 WIB. External WhatsApp/email/push delivery is not configured.
 
-### Phase 10 — AI Business Assistant
+## Phase 10 — AI Business Assistant
 
 The protected `/assistant` page builds a rule-based daily briefing from current GOS data, including follow-ups, goal progress, financial records, and content activity. It does not call an external AI API or send messages automatically.
 
-### Phase 11 — Revenue Growth Engine
+## Phase 11 — Revenue Growth Engine
 
 The protected `/revenue` page models required monthly revenue, transaction count, and prospect count from editable assumptions, and compares them with recorded finance and CRM data. No schema migration is required for this phase.
 
-### Phase 12 — Sales Pipeline & Proposal Management
+## Phase 12 — Sales Pipeline & Proposal Management
 
 Use `/proposals` to create and track proposal records tied to active CRM leads. Run `pnpm db:generate` and `pnpm db:migrate` after updating the source. Proposal acceptance does not automatically create a Finance income transaction.
 
@@ -168,7 +284,7 @@ See [`docs/PHASE-26.md`](docs/PHASE-26.md) for security headers, automated unit 
 - Health check: `/api/health` di kedua aplikasi. Health check GOS juga menguji koneksi database.
 - Panduan dua project Vercel, environment, staging, migration, smoke test, dan batasan ada di [`docs/PHASE-27.md`](docs/PHASE-27.md).
 
-### Phase 28 — Advanced Analytics & Business Intelligence
+## Phase 28 — Advanced Analytics & Business Intelligence
 
 - Halaman `/analytics` menyajikan tren pendapatan/biaya enam bulan, analisis kategori, ringkasan target, MRR, pipeline, konversi prospek, dan pelanggan berdasarkan pembayaran tercatat.
 - API privat `GET /api/analytics` menyediakan ringkasan analitik berbasis sesi login.
@@ -224,63 +340,6 @@ Roadmap rekomendasi setelah baseline Phase 1–30 tersedia di [`docs/ROADMAP-PHA
 - [Deployment guide](docs/DEPLOYMENT.md)
 
 The repository now targets Next.js 16 / React 19 and Prisma ORM 7 with a PostgreSQL driver adapter. The generated Prisma client is intentionally excluded from source control and is created by `pnpm db:generate`. A committed `pnpm-lock.yaml` is still required before CI can pass the reproducibility gate. Full build, typecheck, lint, unit tests, Playwright tests, database migration and deployment remain unverified until executed in a network-enabled environment.
-
-## Struktur Akar Repository Saat Ini
-
-Berikut struktur utama repository sesuai file dan folder yang tersedia. File hasil build, cache, `node_modules`, dan file environment lokal sengaja tidak dicantumkan.
-
-```text
-kholil-growth-os/
-├── .github/
-│   └── workflows/
-│       └── quality-gates.yml
-├── .vscode/
-│   └── settings.json
-├── apps/
-│   ├── gos/                    # Dashboard Growth Operating System privat (port 3001)
-│   │   └── src/
-│   │       ├── app/            # Halaman dashboard dan API routes
-│   │       ├── components/
-│   │       └── lib/
-│   └── web/                    # Website personal brand publik (port 3000)
-│       └── src/
-│           ├── app/            # Halaman publik dan API routes
-│           ├── components/
-│           └── lib/
-├── deploy/
-│   ├── env.production.example  # Contoh variabel environment deployment
-│   └── env.production          # Konfigurasi deployment; jangan publikasikan secret
-├── docs/                       # Panduan setup, keamanan, deployment, fase, dan brand
-│   └── brand/
-├── packages/
-│   ├── business-core/          # Formula finance, KPI, dan attribution
-│   ├── config/                 # Konfigurasi ESLint dan TypeScript bersama
-│   ├── database/               # Prisma client dan akses database bersama
-│   ├── ui/                     # Komponen dan design tokens bersama
-│   └── validation/             # Skema validasi bersama
-├── prisma/
-│   ├── migrations/             # Riwayat migrasi database
-│   ├── bootstrap-admin.ts      # Membuat admin awal dari environment
-│   ├── schema.prisma
-│   └── seed.ts
-├── scripts/                    # Preflight produksi, smoke test, dan static checks
-├── tests/
-│   └── e2e/                    # Playwright end-to-end tests
-├── .env.example                # Template environment lokal
-├── package.json                # Perintah workspace dan versi runtime
-├── pnpm-lock.yaml              # Lockfile dependency workspace
-├── pnpm-workspace.yaml
-├── prisma7.config.ts
-├── playwright.config.ts
-└── turbo.json
-```
-
-### Klarifikasi Konfigurasi Repository
-
-- `pnpm-lock.yaml` dan `.env.example` tersedia di root repository saat ini. Gunakan lockfile yang ada untuk instalasi reproducible; jangan mengganti atau membagikan `.env` lokal.
-- Root `package.json` menetapkan Node.js `>=22.18.0` dan pnpm `>=12.7.0 <13`, dengan package manager yang dipatok ke pnpm `12.14.0`.
-- Perintah workspace utama mencakup `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm qa`, `pnpm test:e2e`, `pnpm smoke`, dan `pnpm production:check`.
-- Struktur di atas adalah ringkasan folder penting, bukan daftar setiap route atau file. Rincian modul dan prasyarat produksi ada di dokumentasi dalam `docs/`.
 
 ## Changelog
 
