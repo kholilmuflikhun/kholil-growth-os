@@ -224,3 +224,75 @@ Roadmap rekomendasi setelah baseline Phase 1–30 tersedia di [`docs/ROADMAP-PHA
 - [Deployment guide](docs/DEPLOYMENT.md)
 
 The repository now targets Next.js 16 / React 19 and Prisma ORM 7 with a PostgreSQL driver adapter. The generated Prisma client is intentionally excluded from source control and is created by `pnpm db:generate`. A committed `pnpm-lock.yaml` is still required before CI can pass the reproducibility gate. Full build, typecheck, lint, unit tests, Playwright tests, database migration and deployment remain unverified until executed in a network-enabled environment.
+
+## Struktur Akar Repository Saat Ini
+
+Berikut struktur utama repository sesuai file dan folder yang tersedia. File hasil build, cache, `node_modules`, dan file environment lokal sengaja tidak dicantumkan.
+
+```text
+kholil-growth-os/
+├── .github/
+│   └── workflows/
+│       └── quality-gates.yml
+├── .vscode/
+│   └── settings.json
+├── apps/
+│   ├── gos/                    # Dashboard Growth Operating System privat (port 3001)
+│   │   └── src/
+│   │       ├── app/            # Halaman dashboard dan API routes
+│   │       ├── components/
+│   │       └── lib/
+│   └── web/                    # Website personal brand publik (port 3000)
+│       └── src/
+│           ├── app/            # Halaman publik dan API routes
+│           ├── components/
+│           └── lib/
+├── deploy/
+│   ├── env.production.example  # Contoh variabel environment deployment
+│   └── env.production          # Konfigurasi deployment; jangan publikasikan secret
+├── docs/                       # Panduan setup, keamanan, deployment, fase, dan brand
+│   └── brand/
+├── packages/
+│   ├── business-core/          # Formula finance, KPI, dan attribution
+│   ├── config/                 # Konfigurasi ESLint dan TypeScript bersama
+│   ├── database/               # Prisma client dan akses database bersama
+│   ├── ui/                     # Komponen dan design tokens bersama
+│   └── validation/             # Skema validasi bersama
+├── prisma/
+│   ├── migrations/             # Riwayat migrasi database
+│   ├── bootstrap-admin.ts      # Membuat admin awal dari environment
+│   ├── schema.prisma
+│   └── seed.ts
+├── scripts/                    # Preflight produksi, smoke test, dan static checks
+├── tests/
+│   └── e2e/                    # Playwright end-to-end tests
+├── .env.example                # Template environment lokal
+├── package.json                # Perintah workspace dan versi runtime
+├── pnpm-lock.yaml              # Lockfile dependency workspace
+├── pnpm-workspace.yaml
+├── prisma7.config.ts
+├── playwright.config.ts
+└── turbo.json
+```
+
+### Klarifikasi Konfigurasi Repository
+
+- `pnpm-lock.yaml` dan `.env.example` tersedia di root repository saat ini. Gunakan lockfile yang ada untuk instalasi reproducible; jangan mengganti atau membagikan `.env` lokal.
+- Root `package.json` menetapkan Node.js `>=22.18.0` dan pnpm `>=12.7.0 <13`, dengan package manager yang dipatok ke pnpm `12.14.0`.
+- Perintah workspace utama mencakup `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm qa`, `pnpm test:e2e`, `pnpm smoke`, dan `pnpm production:check`.
+- Struktur di atas adalah ringkasan folder penting, bukan daftar setiap route atau file. Rincian modul dan prasyarat produksi ada di dokumentasi dalam `docs/`.
+
+## Changelog
+
+### 2026-10-19 — Dokumentasi struktur repository
+
+- Menambahkan peta struktur root yang mengikuti workspace, aplikasi, package bersama, konfigurasi, dokumentasi, database, script, dan test yang tersedia.
+- Menambahkan klarifikasi keberadaan lockfile, template environment, persyaratan runtime, serta perintah workspace berdasarkan konfigurasi repository saat ini.
+- Tidak mengubah fitur aplikasi atau mengklaim bahwa QA dan deployment produksi telah lulus.
+
+### 2026-10-18 — Baseline integrasi v2.4 / Phase 30
+
+- Mengintegrasikan source website publik dan dashboard Growth Operating System hingga baseline Phase 30.
+- Melengkapi integrasi katalog publik, CRM lead detail, operasi pelanggan dan pembayaran, analitik, serta dokumentasi keamanan dan deployment.
+- Menyertakan roadmap Phase 31–60 sebagai rencana lanjutan; fase tersebut bukan fitur yang sudah diimplementasikan.
+- Status implementasi dan batasan verifikasi tersedia di [`docs/IMPLEMENTATION-STATUS-2026-10-18.md`](docs/IMPLEMENTATION-STATUS-2026-10-18.md) dan [`docs/MASTER-RELEASE-v2.4.md`](docs/MASTER-RELEASE-v2.4.md). Baseline source tidak dengan sendirinya berarti siap produksi.
